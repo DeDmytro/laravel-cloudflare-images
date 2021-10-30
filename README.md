@@ -83,8 +83,6 @@ To list existing images you should use `list()` method which also has pagination
 
 ```php
 use DeDmytro\CloudflareImages\Facades\CloudflareImages;
-use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
-use DeDmytro\CloudflareImages\Http\Entities\Image;
 
 /* @var $response ListResponse*/
 $response = CloudflareImages::api()->list()
@@ -106,8 +104,6 @@ To get existing image details you should use `get($id)` method where `$id` is im
 
 ```php
 use DeDmytro\CloudflareImages\Facades\CloudflareImages;
-use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
-use DeDmytro\CloudflareImages\Http\Entities\Image;
 
 $response = CloudflareImages::api()->get($id)
 
@@ -126,8 +122,6 @@ To delete existing image you should use `delete($id)` method where `$id` is imag
 
 ```php
 use DeDmytro\CloudflareImages\Facades\CloudflareImages;
-use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
-use DeDmytro\CloudflareImages\Http\Entities\Image;
 
 $response = CloudflareImages::api()->delete($id)
 $response->success
