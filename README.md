@@ -1,4 +1,4 @@
-# Laravel CloudflareImages
+# Cloudflare Images
 
 Provides access to Cloudflare Images API for Laravel projects
 
