@@ -32,7 +32,7 @@ class ApiTest extends TestCase
 
     public function testDirectUploadResponse()
     {
-        $response = CloudflareImages::api()->getDirectUploadUrl();
+        $response = CloudflareImages::api()->directUploadUrl();
 
         $this->assertInstanceOf(DirectUploadResponse::class, $response);
         $this->assertNotNull($response->result->uploadURL);

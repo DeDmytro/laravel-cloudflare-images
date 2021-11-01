@@ -115,7 +115,7 @@ class ImagesApiClient
      * @link https://developers.cloudflare.com/images/cloudflare-images/upload-images/direct-creator-upload
      * @return DirectUploadResponse
      */
-    final public function getDirectUploadUrl(): DirectUploadResponse
+    final public function directUploadUrl(): DirectUploadResponse
     {
         return DirectUploadResponse::fromArray($this->httpClient->post('v1/direct_upload')->json());
     }

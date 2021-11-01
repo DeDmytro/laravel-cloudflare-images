@@ -51,10 +51,28 @@ return [
 
 ## Using
 
+### Direct upload
+
+The Direct upload is feature of Cloudflare Images to upload image directly from frontend but without sharing your api key. Once you get this url you can use
+inside your html
+
+`<form  method="post" enctype="multipart/form-data"  action="{{ $uploadUrl }}">`
+
+**IMPORTANT: You can use this url only once!**
+
+```php
+use DeDmytro\CloudflareImages\Facades\CloudflareImages;
+
+$response = CloudflareImages::api()->directUploadUrl()
+$response->result->id; // Your uploaded image ID
+$response->result->uploadURL; // One-time uploadUrl
+
+```
+
 ### Upload
 
-Call `upload()` method and pass file as local file path or `UploadedFile` instance.
-As a result of upload you'll get `DetailsResponse` instance with uploaded image details, so you can save it locally.
+Call `upload()` method and pass file as local file path or `UploadedFile` instance. As a result of upload you'll get `DetailsResponse` instance with uploaded
+image details, so you can save it locally.
 
 ```php
 use DeDmytro\CloudflareImages\Facades\CloudflareImages;
