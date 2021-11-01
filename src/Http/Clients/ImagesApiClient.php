@@ -3,6 +3,7 @@
 namespace DeDmytro\CloudflareImages\Http\Clients;
 
 use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
+use DeDmytro\CloudflareImages\Http\Responses\DirectUploadResponse;
 use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\UploadedFile;
@@ -96,7 +97,7 @@ class ImagesApiClient
     }
 
     /**
-     * Return image details by ID
+     * Delete image by ID
      *
      * @param  string  $imageId
      *
@@ -105,5 +106,17 @@ class ImagesApiClient
     final public function delete(string $imageId): DetailsResponse
     {
         return DetailsResponse::fromArray($this->httpClient->delete("v1/$imageId")->json());
+    }
+
+    /**
+     * Return direct upload information
+     * Direct upload allows uploading files from frontend without sharing the application api key
+     *
+     * @link https://developers.cloudflare.com/images/cloudflare-images/upload-images/direct-creator-upload
+     * @return DirectUploadResponse
+     */
+    final public function getDirectUploadUrl(): DirectUploadResponse
+    {
+        return DirectUploadResponse::fromArray($this->httpClient->post('v1/direct_upload')->json());
     }
 }

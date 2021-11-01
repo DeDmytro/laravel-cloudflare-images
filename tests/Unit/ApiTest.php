@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use DeDmytro\CloudflareImages\Facades\CloudflareImages;
 use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
+use DeDmytro\CloudflareImages\Http\Responses\DirectUploadResponse;
 use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
@@ -27,5 +28,14 @@ class ApiTest extends TestCase
         $response = CloudflareImages::api()->upload($path);
         $this->assertInstanceOf(DetailsResponse::class, $response);
         $this->assertEquals($file, $response->result->filename);
+    }
+
+    public function testDirectUploadResponse()
+    {
+        $response = CloudflareImages::api()->getDirectUploadUrl();
+
+        $this->assertInstanceOf(DirectUploadResponse::class, $response);
+        $this->assertNotNull($response->result->uploadURL);
+        $this->assertNotNull($response->result->id);
     }
 }

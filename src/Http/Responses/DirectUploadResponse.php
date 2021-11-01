@@ -2,19 +2,20 @@
 
 namespace DeDmytro\CloudflareImages\Http\Responses;
 
+use DeDmytro\CloudflareImages\Http\Entities\DirectUploadInfo;
 use DeDmytro\CloudflareImages\Http\Entities\Image;
 
-class DetailsResponse extends BaseResponse
+class DirectUploadResponse extends BaseResponse
 {
     /**
      * Define array result
      *
-     * @var Image
+     * @var DirectUploadInfo
      */
     public $result;
 
     /**
-     * DetailsResponse response
+     * DirectUploadResponse response
      *
      * @param  array  $result
      * @param  bool  $success
@@ -23,6 +24,6 @@ class DetailsResponse extends BaseResponse
      */
     public function __construct(array $result, bool $success = true, array $errors = [], array $messages = [])
     {
-        parent::__construct(Image::fromArray($result), $success, $errors, $messages);
+        parent::__construct(DirectUploadInfo::fromArray($result), $success, $errors, $messages);
     }
 }
