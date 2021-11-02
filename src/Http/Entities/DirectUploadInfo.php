@@ -10,7 +10,7 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
-class DirectUploadInfo implements Arrayable
+class DirectUploadInfo implements ArrayableEntity
 {
     public string $id;
 
@@ -35,7 +35,7 @@ class DirectUploadInfo implements Arrayable
      *
      * @return self
      */
-    public static function fromArray(array $array): self
+    public static function fromArray(array $array)
     {
         return new self(
             (string) Arr::get($array, 'id'),

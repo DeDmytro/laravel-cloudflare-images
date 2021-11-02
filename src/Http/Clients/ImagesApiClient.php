@@ -2,6 +2,8 @@
 
 namespace DeDmytro\CloudflareImages\Http\Clients;
 
+use DeDmytro\CloudflareImages\Http\Entities\DirectUploadInfo;
+use DeDmytro\CloudflareImages\Http\Entities\Image;
 use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
 use DeDmytro\CloudflareImages\Http\Responses\DirectUploadResponse;
 use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
@@ -11,6 +13,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use DeDmytro\CloudflareImages\Exceptions\NoKeyOrAccountProvided;
 use Psr\Http\Message\UploadedFileInterface;
+use Throwable;
 
 class ImagesApiClient
 {
@@ -68,7 +71,7 @@ class ImagesApiClient
                 'metadata'          => \GuzzleHttp\json_encode($metadata),
             ])->json();
 
-        return DetailsResponse::fromArray($result);
+        return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
     }
 
     /**
@@ -81,7 +84,7 @@ class ImagesApiClient
      */
     final public function list(int $page = 1, int $perPage = 50): ListResponse
     {
-        return ListResponse::fromArray($this->httpClient->get('v1', ['page' => $page, 'per_page' => $perPage])->json());
+        return ListResponse::fromArray($this->httpClient->get('v1', ['page' => $page, 'per_page' => $perPage])->json())->mapResultInto(Image::class, 'images');
     }
 
     /**
@@ -93,7 +96,7 @@ class ImagesApiClient
      */
     final public function get(string $imageId): DetailsResponse
     {
-        return DetailsResponse::fromArray($this->httpClient->get("v1/$imageId")->json());
+        return DetailsResponse::fromArray($this->httpClient->get("v1/$imageId")->json())->mapResultInto(Image::class);
     }
 
     /**
@@ -113,10 +116,10 @@ class ImagesApiClient
      * Direct upload allows uploading files from frontend without sharing the application api key
      *
      * @link https://developers.cloudflare.com/images/cloudflare-images/upload-images/direct-creator-upload
-     * @return DirectUploadResponse
+     * @return DetailsResponse
      */
-    final public function directUploadUrl(): DirectUploadResponse
+    final public function directUploadUrl(): DetailsResponse
     {
-        return DirectUploadResponse::fromArray($this->httpClient->post('v1/direct_upload')->json());
+        return DetailsResponse::fromArray($this->httpClient->post('v1/direct_upload')->json())->mapResultInto(DirectUploadInfo::class);
     }
 }

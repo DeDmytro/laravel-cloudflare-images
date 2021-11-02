@@ -5,27 +5,23 @@ namespace DeDmytro\CloudflareImages\Http\Entities;
 use DeDmytro\CloudflareImages\Http\Responses\BaseResponse;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
-class ImageVariants implements Arrayable
+class ImageVariants implements ArrayableEntity
 {
-    public ?string $thumbnail;
-
-    public ?string $hero;
-
-    public ?string $original;
+    private array $variants = [];
 
     /**
      * ImageVariants constructor
      *
-     * @param  string|null  $thumbnail
-     * @param  string|null  $hero
-     * @param  string|null  $original
+     * @param  array  $variants
      */
-    public function __construct(?string $thumbnail, ?string $hero, ?string $original)
+    public function __construct(array $variants)
     {
-        $this->thumbnail = $thumbnail;
-        $this->hero      = $hero;
-        $this->original  = $original;
+        foreach ($variants as $variant) {
+            $key                  = Str::afterLast($variant, '/');
+            $this->variants[$key] = $variant;
+        }
     }
 
     /**
@@ -35,13 +31,9 @@ class ImageVariants implements Arrayable
      *
      * @return self
      */
-    final public static function fromArray(array $array): self
+    final public static function fromArray(array $array)
     {
-        return new self(
-            Arr::get($array, 'thumbnail', Arr::get($array, 1)),
-            Arr::get($array, 'hero', Arr::get($array, 0)),
-            Arr::get($array, 'original', Arr::get($array, 2)),
-        );
+        return new self($array);
     }
 
     /**
@@ -49,10 +41,15 @@ class ImageVariants implements Arrayable
      */
     final public function toArray(): array
     {
-        return [
-            'thumbnail' => $this->thumbnail,
-            'hero'      => $this->hero,
-            'original'  => $this->original,
-        ];
+        return $this->variants;
+    }
+
+    public function __get(string $name)
+    {
+        if (array_key_exists($name, $this->variants)) {
+            return $this->variants[$name];
+        }
+
+        return '';
     }
 }

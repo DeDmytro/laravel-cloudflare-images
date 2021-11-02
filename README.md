@@ -89,8 +89,8 @@ $image = $response->result
 
 $image->id;
 $image->filename;
-$image->variants->thumbnail;
-$image->variants->original;
+$image->variants->thumbnail; //Depends on your Cloudflare Images Variants setting
+$image->variants->original; //Depends on your Cloudflare Images Variants setting
 
 
 ```
@@ -110,8 +110,8 @@ $response = CloudflareImages::api()->list($page, $perPage)
 foreach($response->result as $image){
     $image->id;
     $image->filename;
-    $image->variants->thumbnail;
-    $image->variants->original;
+    $image->variants->thumbnail; //Depends on your Cloudflare Images Variants setting
+    $image->variants->original; //Depends on your Cloudflare Images Variants setting
 }
 
 ```
@@ -128,8 +128,8 @@ $response = CloudflareImages::api()->get($id)
 $image = $response->result;
 $image->id;
 $image->filename;
-$image->variants->thumbnail;
-$image->variants->original;
+$image->variants->thumbnail; //Depends on your Cloudflare Images Variants setting
+$image->variants->original; //Depends on your Cloudflare Images Variants setting
 
 
 ```

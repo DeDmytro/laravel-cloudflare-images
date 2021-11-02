@@ -10,7 +10,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-class ApiTest extends TestCase
+class ImagesApiTest extends TestCase
 {
     public function testSuccessfulListResponse()
     {
@@ -26,15 +26,19 @@ class ApiTest extends TestCase
         $file = basename($path);
 
         $response = CloudflareImages::api()->upload($path);
+
         $this->assertInstanceOf(DetailsResponse::class, $response);
         $this->assertEquals($file, $response->result->filename);
+
+        $response = CloudflareImages::api()->delete($response->result->id);
+        $this->assertInstanceOf(DetailsResponse::class, $response);
     }
 
     public function testDirectUploadResponse()
     {
         $response = CloudflareImages::api()->directUploadUrl();
 
-        $this->assertInstanceOf(DirectUploadResponse::class, $response);
+        $this->assertInstanceOf(DetailsResponse::class, $response);
         $this->assertNotNull($response->result->uploadURL);
         $this->assertNotNull($response->result->id);
     }

@@ -10,7 +10,7 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
-class Image implements Arrayable
+class Image implements ArrayableEntity
 {
     public string $id;
 
@@ -45,13 +45,13 @@ class Image implements Arrayable
     }
 
     /**
-     * Return Photo instance from array
+     * Return Image instance from array
      *
      * @param  array  $array
      *
      * @return Image
      */
-    public static function fromArray(array $array): self
+    public static function fromArray(array $array)
     {
         return new self(
             (string) Arr::get($array, 'id'),

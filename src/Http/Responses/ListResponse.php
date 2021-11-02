@@ -2,7 +2,9 @@
 
 namespace DeDmytro\CloudflareImages\Http\Responses;
 
+use DeDmytro\CloudflareImages\Http\Entities\ArrayableEntity;
 use DeDmytro\CloudflareImages\Http\Entities\Image;
+use DeDmytro\CloudflareImages\Http\Entities\ImageVariant;
 use Illuminate\Support\Arr;
 
 class ListResponse extends BaseResponse
@@ -10,7 +12,7 @@ class ListResponse extends BaseResponse
     /**
      * Define array result
      *
-     * @var array
+     * @var array|ArrayableEntity[]|Image[]|ImageVariant[]
      */
     public $result;
 
@@ -24,7 +26,24 @@ class ListResponse extends BaseResponse
      */
     public function __construct(array $result, bool $success = true, array $errors = [], array $messages = [])
     {
-        parent::__construct(array_map(static fn (array $image) => Image::fromArray($image), Arr::get($result, 'images', [])), $success, $errors, $messages);
+        parent::__construct($result, $success, $errors, $messages);
+    }
+
+    /**
+     * Map result items into array of objects
+     *
+     * @param  string  $class
+     * @param  string  $key
+     *
+     * @return $this
+     */
+    final public function mapResultInto(string $class, string $key): self
+    {
+        if ($key && is_subclass_of($class, ArrayableEntity::class)) {
+            $this->result = array_map(static fn (array $image) => $class::fromArray($image), Arr::get($this->result, $key, []));
+        }
+
+        return $this;
     }
 
     /**
