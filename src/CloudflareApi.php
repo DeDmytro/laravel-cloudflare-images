@@ -2,17 +2,18 @@
 
 namespace DeDmytro\CloudflareImages;
 
+use DeDmytro\CloudflareImages\Exceptions\NoImageDeliveryUrlProvided;
 use DeDmytro\CloudflareImages\Http\Clients\ImagesApiClient;
 use DeDmytro\CloudflareImages\Http\Clients\ImagesVariantsApiClient;
 
-class CloudflareImages
+class CloudflareApi
 {
     /**
      * Return Images Api Client
      *
      * @return ImagesApiClient
      */
-    final public function api(): ImagesApiClient
+    final public function images(): ImagesApiClient
     {
         return new ImagesApiClient();
     }

@@ -7,11 +7,11 @@ use DeDmytro\CloudflareImages\Http\Clients\ImagesVariantsApiClient;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method ImagesApiClient api()
+ * @method ImagesApiClient images()
  * @method ImagesVariantsApiClient variants()
- * @mixin \DeDmytro\CloudflareImages\CloudflareImages
+ * @mixin \DeDmytro\CloudflareImages\CloudflareApi
  */
-class CloudflareImages extends Facade
+class CloudflareApi extends Facade
 {
     /**
      * Return facade unique key

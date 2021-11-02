@@ -2,6 +2,7 @@
 
 namespace DeDmytro\CloudflareImages\Http\Clients;
 
+use DeDmytro\CloudflareImages\Exceptions\NoImageDeliveryUrlProvided;
 use DeDmytro\CloudflareImages\Http\Entities\DirectUploadInfo;
 use DeDmytro\CloudflareImages\Http\Entities\Image;
 use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
@@ -48,7 +49,7 @@ class ImagesApiClient
      *
      * @return DetailsResponse
      */
-    final public function upload($file, bool $requiredSignedUrl = false, array $metadata = []): DetailsResponse
+    final public function upload($file, string $filename = '', bool $requiredSignedUrl = false, array $metadata = []): DetailsResponse
     {
         if ($file instanceof UploadedFile) {
             $path = $file->getRealPath();
@@ -64,7 +65,7 @@ class ImagesApiClient
                     'Content-type' => 'multipart/form-data',
                     'name'         => 'file',
                     'contents'     => fopen($path, 'rb'),
-                    'filename'     => basename($path),
+                    'filename'     => $filename ?: basename($path),
 
                 ],
                 'requireSignedURLs' => var_export($requiredSignedUrl, true),
@@ -121,5 +122,27 @@ class ImagesApiClient
     final public function directUploadUrl(): DetailsResponse
     {
         return DetailsResponse::fromArray($this->httpClient->post('v1/direct_upload')->json())->mapResultInto(DirectUploadInfo::class);
+    }
+
+    /**
+     * Return image public url by image id and variation
+     *
+     * @param  string  $imageId
+     * @param  string|null  $variation
+     *
+     * @throws \Throwable
+     * @return string
+     */
+    final public function url(string $imageId, ?string $variation = null): string
+    {
+        $imageDeliveryUrl = config('cloudflare_images.delivery_url');
+
+        throw_if(empty($imageDeliveryUrl), new NoImageDeliveryUrlProvided());
+
+        if (! $variation) {
+            $variation = config('cloudflare_images.default_variation');
+        }
+
+        return ltrim(rtrim($imageDeliveryUrl, '/') . '/' . ltrim("$imageId/$variation", '/'), '/');
     }
 }

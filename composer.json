@@ -51,7 +51,7 @@
                 "DeDmytro\\CloudflareImages\\CloudflareImagesServiceProvider"
             ],
             "aliases": {
-                "CloudflareImages": "DeDmytro\\CloudflareImages\\Facades\\CloudflareImages"
+                "CloudflareImages": "DeDmytro\\CloudflareImages\\Facades\\CloudflareApi"
             }
         }
     }

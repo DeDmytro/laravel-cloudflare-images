@@ -47,7 +47,7 @@ final class CloudflareImagesServiceProvider extends BaseServiceProvider
     protected function registerFacade(): void
     {
         $this->app->bind('cloudflareImages', function ($app) {
-            return new CloudflareImages();
+            return new CloudflareApi();
         });
     }
 }

@@ -61,9 +61,9 @@ inside your html
 **IMPORTANT: You can use this url only once!**
 
 ```php
-use DeDmytro\CloudflareImages\Facades\CloudflareImages;
+use DeDmytro\CloudflareImages\Facades\CloudflareApi;
 
-$response = CloudflareImages::api()->directUploadUrl()
+$response = CloudflareApi::images()->directUploadUrl()
 $response->result->id; // Your uploaded image ID
 $response->result->uploadURL; // One-time uploadUrl
 
@@ -75,14 +75,14 @@ Call `upload()` method and pass file as local file path or `UploadedFile` instan
 image details, so you can save it locally.
 
 ```php
-use DeDmytro\CloudflareImages\Facades\CloudflareImages;
+use DeDmytro\CloudflareImages\Facades\CloudflareApi;
 use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
 use DeDmytro\CloudflareImages\Http\Entities\Image;
 
 /* @var $file \Illuminate\Http\UploadedFile|string */
 
 /* @var $response DetailsResponse*/
-$response = CloudflareImages::api()->upload($file)
+$response = CloudflareApi::images()->upload($file)
 
 /* @var $image Image*/
 $image = $response->result
@@ -100,12 +100,12 @@ $image->variants->original; //Depends on your Cloudflare Images Variants setting
 To list existing images you should use `list()` method which also has pagination and accept `$page` and `$perPage` arguments.
 
 ```php
-use DeDmytro\CloudflareImages\Facades\CloudflareImages;
+use DeDmytro\CloudflareImages\Facades\CloudflareApi;
 
 /* @var $response ListResponse*/
-$response = CloudflareImages::api()->list()
+$response = CloudflareApi::images()->list()
 //OR
-$response = CloudflareImages::api()->list($page, $perPage)
+$response = CloudflareApi::images()->list($page, $perPage)
 
 foreach($response->result as $image){
     $image->id;
@@ -121,9 +121,9 @@ foreach($response->result as $image){
 To get existing image details you should use `get($id)` method where `$id` is image identifier you received when you list or upload the image.
 
 ```php
-use DeDmytro\CloudflareImages\Facades\CloudflareImages;
+use DeDmytro\CloudflareImages\Facades\CloudflareApi;
 
-$response = CloudflareImages::api()->get($id)
+$response = CloudflareApi::images()->get($id)
 
 $image = $response->result;
 $image->id;
@@ -139,9 +139,9 @@ $image->variants->original; //Depends on your Cloudflare Images Variants setting
 To delete existing image you should use `delete($id)` method where `$id` is image identifier you received when you list or upload the image.
 
 ```php
-use DeDmytro\CloudflareImages\Facades\CloudflareImages;
+use DeDmytro\CloudflareImages\Facades\CloudflareApi;
 
-$response = CloudflareImages::api()->delete($id)
+$response = CloudflareApi::images()->delete($id)
 $response->success
 
 ```
