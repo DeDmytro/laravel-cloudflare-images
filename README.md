@@ -38,6 +38,8 @@ Add two environment variables to your .env file:
 ```dotenv
 CLOUDFLARE_IMAGES_ACCOUNT='your-account-id'
 CLOUDFLARE_IMAGES_KEY='your-api-key'
+CLOUDFLARE_IMAGES_DELIVERY_URL='https://imagedelivery.net/ZWd9g1K8vvvVv_Yyyy_XXX'
+CLOUDFLARE_IMAGES_DEFAULT_VARIATION='your-default-variation'
 ```
 
 or publish config and set up vars there
@@ -46,6 +48,8 @@ or publish config and set up vars there
 return [
     'account'=> env('CLOUDFLARE_IMAGES_ACCOUNT'),
     'key'=> env('CLOUDFLARE_IMAGES_KEY'),
+    'delivery_url'      => env('CLOUDFLARE_IMAGES_DELIVERY_URL'),
+    'default_variation' => env('CLOUDFLARE_IMAGES_DEFAULT_VARIATION')
 ];
 ```
 
@@ -144,6 +148,25 @@ use DeDmytro\CloudflareImages\Facades\CloudflareApi;
 $response = CloudflareApi::images()->delete($id)
 $response->success
 
+```
+
+### Public url
+
+To generate image url locally call method `url(` and pass image ID. Don't forget to set up
+
+```dotenv
+CLOUDFLARE_IMAGES_DELIVERY_URL=
+CLOUDFLARE_IMAGES_DEFAULT_VARIATION=
+```
+
+```php
+use DeDmytro\CloudflareImages\Facades\CloudflareApi;
+
+$url = CloudflareApi::images()->url($id)
+```
+
+```html
+<img src="{{ $url }}"/>
 ```
 
 [badge_downloads]:      https://img.shields.io/packagist/dt/dedmytro/laravel-cloudflare-images.svg?style=flat-square
