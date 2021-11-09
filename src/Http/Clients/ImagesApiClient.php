@@ -2,6 +2,7 @@
 
 namespace DeDmytro\CloudflareImages\Http\Clients;
 
+use DeDmytro\CloudflareImages\Exceptions\CloudflareImageNotFound;
 use DeDmytro\CloudflareImages\Exceptions\NoImageDeliveryUrlProvided;
 use DeDmytro\CloudflareImages\Http\Entities\DirectUploadInfo;
 use DeDmytro\CloudflareImages\Http\Entities\Image;
@@ -93,11 +94,17 @@ class ImagesApiClient
      *
      * @param  string  $imageId
      *
+     * @throws \DeDmytro\CloudflareImages\Exceptions\CloudflareImageNotFound
+     * @throws \Throwable
      * @return DetailsResponse
      */
     final public function get(string $imageId): DetailsResponse
     {
-        return DetailsResponse::fromArray($this->httpClient->get("v1/$imageId")->json())->mapResultInto(Image::class);
+        $result = $this->httpClient->get("v1/$imageId")->json();
+
+        throw_if(is_null($result), new CloudflareImageNotFound($imageId));
+
+        return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
     }
 
     /**
@@ -105,11 +112,35 @@ class ImagesApiClient
      *
      * @param  string  $imageId
      *
+     * @throws \Throwable
      * @return DetailsResponse
      */
     final public function delete(string $imageId): DetailsResponse
     {
-        return DetailsResponse::fromArray($this->httpClient->delete("v1/$imageId")->json());
+        $result = $this->httpClient->delete("v1/$imageId")->json();
+
+        throw_if(is_null($result), new CloudflareImageNotFound($imageId));
+
+        return DetailsResponse::fromArray($result);
+    }
+
+    /**
+     * Check image exists by ID
+     *
+     * @param  string  $imageId
+     *
+     * @throws \Throwable
+     * @return bool
+     */
+    final public function exists(string $imageId): bool
+    {
+        $result = $this->httpClient->get("v1/$imageId")->json();
+
+        if (is_null($result)) {
+            return false;
+        }
+
+        return DetailsResponse::fromArray($result)->success;
     }
 
     /**
