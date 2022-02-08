@@ -44,7 +44,7 @@ class ImagesVariantsApiClient
      *
      * @return ListResponse
      */
-    final public function list(): ListResponse
+    public function list(): ListResponse
     {
         return ListResponse::fromArray($this->httpClient->get('variants')->json())->mapResultInto(ImageVariant::class, 'variants');
     }
@@ -56,7 +56,7 @@ class ImagesVariantsApiClient
      *
      * @return DetailsResponse
      */
-    final public function get(string $variantId): DetailsResponse
+    public function get(string $variantId): DetailsResponse
     {
         return DetailsResponse::fromArray($this->httpClient->get("variants/$variantId")->json())->mapResultInto(ImageVariant::class);
     }
@@ -68,7 +68,7 @@ class ImagesVariantsApiClient
      *
      * @return DetailsResponse
      */
-    final public function delete(string $variantId): DetailsResponse
+    public function delete(string $variantId): DetailsResponse
     {
         return DetailsResponse::fromArray($this->httpClient->delete("variants/$variantId")->json());
     }
