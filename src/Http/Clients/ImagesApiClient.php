@@ -50,7 +50,7 @@ class ImagesApiClient
      *
      * @return DetailsResponse
      */
-    public function upload($file, string $filename = '', bool $requiredSignedUrl = false, array $metadata = []): DetailsResponse
+    public function upload($file, string $filename = '', bool $requiredSignedUrl = false, array $metadata = [],$customId = null): DetailsResponse
     {
         if ($file instanceof UploadedFile) {
             $path = $file->getRealPath();
@@ -58,20 +58,24 @@ class ImagesApiClient
             $path = $file;
         }
 
-        $result = $this->httpClient
-            ->asMultipart()
-            ->post('v1', [
-                'file'              => [
-
+        $reqBody = [
+                'file' => [
                     'Content-type' => 'multipart/form-data',
                     'name'         => 'file',
                     'contents'     => fopen($path, 'rb'),
                     'filename'     => $filename ?: basename($path),
-
                 ],
                 'requireSignedURLs' => var_export($requiredSignedUrl, true),
                 'metadata'          => \GuzzleHttp\json_encode($metadata),
-            ])->json();
+            ]
+        
+        if ($customId) {
+            $reqBody['file']['id'] = $customId;
+        }
+        
+        $result = $this->httpClient
+            ->asMultipart()
+            ->post('v1', $reqBody)->json();
 
         return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
     }
