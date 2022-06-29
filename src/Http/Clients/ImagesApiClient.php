@@ -67,7 +67,7 @@ class ImagesApiClient
                 ],
                 'requireSignedURLs' => var_export($requiredSignedUrl, true),
                 'metadata'          => \GuzzleHttp\json_encode($metadata),
-            ]
+            ];
         
         if ($customId) {
             $reqBody['file']['id'] = $customId;
