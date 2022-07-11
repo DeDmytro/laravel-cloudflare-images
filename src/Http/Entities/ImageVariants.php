@@ -2,9 +2,6 @@
 
 namespace DeDmytro\CloudflareImages\Http\Entities;
 
-use DeDmytro\CloudflareImages\Http\Responses\BaseResponse;
-use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class ImageVariants implements ArrayableEntity
@@ -44,6 +41,13 @@ class ImageVariants implements ArrayableEntity
         return $this->variants;
     }
 
+    /**
+     * Return image variant url by name
+     *
+     * @param  string  $name
+     *
+     * @return mixed|string
+     */
     public function __get(string $name)
     {
         if (array_key_exists($name, $this->variants)) {
@@ -51,5 +55,28 @@ class ImageVariants implements ArrayableEntity
         }
 
         return '';
+    }
+
+    /**
+     * Set/Update variation url by name
+     *
+     * @param  string  $name
+     * @param $value
+     */
+    public function __set(string $name, $value)
+    {
+        $this->variants[$name] = $value;
+    }
+
+    /**
+     * Check variation exists when use isset() or empty() on property
+     *
+     * @param $name
+     *
+     * @return bool
+     */
+    public function __isset($name)
+    {
+        return array_key_exists($name, $this->variants);
     }
 }
