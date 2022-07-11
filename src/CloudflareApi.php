@@ -13,7 +13,7 @@ class CloudflareApi
      *
      * @return ImagesApiClient
      */
-    final public function images(): ImagesApiClient
+    public function images(): ImagesApiClient
     {
         return new ImagesApiClient();
     }
@@ -23,7 +23,7 @@ class CloudflareApi
      *
      * @return ImagesVariantsApiClient
      */
-    final public function variants(): ImagesVariantsApiClient
+    public function variants(): ImagesVariantsApiClient
     {
         return new ImagesVariantsApiClient();
     }

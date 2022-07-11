@@ -1,30 +1,31 @@
 <?php
 
-namespace DeDmytro\CloudflareImages\Http\Clients;
+namespace DeDmytro\CloudflareImages\Testing\Fakes;
 
 use DeDmytro\CloudflareImages\Exceptions\CloudflareImageNotFound;
 use DeDmytro\CloudflareImages\Exceptions\NoImageDeliveryUrlProvided;
+use DeDmytro\CloudflareImages\Http\Clients\ImagesApiClient;
 use DeDmytro\CloudflareImages\Http\Entities\DirectUploadInfo;
 use DeDmytro\CloudflareImages\Http\Entities\Image;
+use DeDmytro\CloudflareImages\Http\Entities\ImageVariants;
 use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
-use DeDmytro\CloudflareImages\Http\Responses\DirectUploadResponse;
 use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use DeDmytro\CloudflareImages\Exceptions\NoKeyOrAccountProvided;
+use Illuminate\Support\Str;
 use Psr\Http\Message\UploadedFileInterface;
 use Throwable;
 
-class ImagesApiClient
+class ImagesApiClientFake extends ImagesApiClient
 {
     /**
-     * Contains http client
-     *
-     * @var PendingRequest
+     * @var array
      */
-    private PendingRequest $httpClient;
+    private static $createdFakeIds = [];
 
     /**
      * ApiClient constructor
@@ -33,12 +34,12 @@ class ImagesApiClient
      */
     public function __construct()
     {
-        $account = config('cloudflare_images.account');
-        $key     = config('cloudflare_images.key');
+        config()->set('cloudflare_images.account', 'fake');
+        config()->set('cloudflare_images.key', 'fake');
+        config()->set('cloudflare_images.default_variation', 'fake');
+        config()->set('cloudflare_images.delivery_url', 'fake');
 
-        throw_unless($account || $key, new NoKeyOrAccountProvided());
-
-        $this->httpClient = Http::withToken($key)->baseUrl("https://api.cloudflare.com/client/v4/accounts/$account/images");
+        parent::__construct();
     }
 
     /**
@@ -52,28 +53,37 @@ class ImagesApiClient
      */
     public function upload($file, string $filename = '', bool $requiredSignedUrl = false, array $metadata = []): DetailsResponse
     {
-        if ($file instanceof UploadedFile) {
-            $path = $file->getRealPath();
-        } else {
-            $path = $file;
-        }
-
-        $result = $this->httpClient
-            ->asMultipart()
-            ->post('v1', [
-                'file'              => [
-
-                    'Content-type' => 'multipart/form-data',
-                    'name'         => 'file',
-                    'contents'     => fopen($path, 'rb'),
-                    'filename'     => $filename ?: basename($path),
-
-                ],
-                'requireSignedURLs' => var_export($requiredSignedUrl, true),
-                'metadata'          => \GuzzleHttp\json_encode($metadata),
-            ])->json();
+        $result = [
+            'result'   => $this->testImageData(Str::afterLast($file, '/')),
+            'success'  => true,
+            'errors'   => [],
+            'messages' => [],
+        ];
 
         return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
+    }
+
+    /**
+     * Return test image data and save id to static
+     *
+     * @param  string|null  $filename
+     *
+     * @return array
+     */
+    private function testImageData(string $filename = null): array
+    {
+        $id = Str::random(64);
+
+        static::$createdFakeIds[] = $id;
+
+        return [
+            'id'                => $id,
+            'filename'          => $filename ?? Str::random(64),
+            'metadata'          => [],
+            'requireSignedURLs' => false,
+            'variants'          => [],
+            'uploaded'          => now()->toDateTimeString(),
+        ];
     }
 
     /**
@@ -86,7 +96,16 @@ class ImagesApiClient
      */
     public function list(int $page = 1, int $perPage = 50): ListResponse
     {
-        return ListResponse::fromArray($this->httpClient->get('v1', ['page' => $page, 'per_page' => $perPage])->json())->mapResultInto(Image::class, 'images');
+        $result = [
+            'result'   => array_map(function ($item) {
+                return $this->testImageData();
+            }, range(1, $perPage)),
+            'success'  => true,
+            'errors'   => [],
+            'messages' => [],
+        ];
+
+        return ListResponse::fromArray($result)->mapResultInto(Image::class, 'images');
     }
 
     /**
@@ -94,15 +113,17 @@ class ImagesApiClient
      *
      * @param  string  $imageId
      *
-     * @throws \DeDmytro\CloudflareImages\Exceptions\CloudflareImageNotFound
      * @throws \Throwable
      * @return DetailsResponse
      */
     public function get(string $imageId): DetailsResponse
     {
-        $result = $this->httpClient->get("v1/$imageId")->json();
-
-        throw_if(is_null($result), new CloudflareImageNotFound($imageId));
+        $result = [
+            'result'   => $this->testImageData(),
+            'success'  => true,
+            'errors'   => [],
+            'messages' => [],
+        ];
 
         return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
     }
@@ -117,9 +138,12 @@ class ImagesApiClient
      */
     public function delete(string $imageId): DetailsResponse
     {
-        $result = $this->httpClient->delete("v1/$imageId")->json();
-
-        throw_if(is_null($result), new CloudflareImageNotFound($imageId));
+        $result = [
+            'result'   => [],
+            'success'  => true,
+            'errors'   => [],
+            'messages' => [],
+        ];
 
         return DetailsResponse::fromArray($result);
     }
@@ -134,13 +158,7 @@ class ImagesApiClient
      */
     public function exists(string $imageId): bool
     {
-        $result = $this->httpClient->get("v1/$imageId")->json();
-
-        if (is_null($result)) {
-            return false;
-        }
-
-        return DetailsResponse::fromArray($result)->success;
+        return in_array($imageId, static::$createdFakeIds, true);
     }
 
     /**
@@ -152,7 +170,17 @@ class ImagesApiClient
      */
     public function directUploadUrl(): DetailsResponse
     {
-        return DetailsResponse::fromArray($this->httpClient->post('v1/direct_upload')->json())->mapResultInto(DirectUploadInfo::class);
+        $result = [
+            'result'   => [
+                'id'        => Str::random(),
+                'uploadURL' => 'https://api.cloudflarefake.com/',
+            ],
+            'success'  => true,
+            'errors'   => [],
+            'messages' => [],
+        ];
+
+        return DetailsResponse::fromArray($result)->mapResultInto(DirectUploadInfo::class);
     }
 
     /**
@@ -166,14 +194,6 @@ class ImagesApiClient
      */
     public function url(string $imageId, ?string $variation = null): string
     {
-        $imageDeliveryUrl = config('cloudflare_images.delivery_url');
-
-        throw_if(empty($imageDeliveryUrl), new NoImageDeliveryUrlProvided());
-
-        if (! $variation) {
-            $variation = config('cloudflare_images.default_variation');
-        }
-
-        return ltrim(rtrim($imageDeliveryUrl, '/') . '/' . ltrim("$imageId/$variation", '/'), '/');
+        return Str::random(64);
     }
 }
