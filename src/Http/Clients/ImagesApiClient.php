@@ -4,18 +4,14 @@ namespace DeDmytro\CloudflareImages\Http\Clients;
 
 use DeDmytro\CloudflareImages\Exceptions\CloudflareImageNotFound;
 use DeDmytro\CloudflareImages\Exceptions\NoImageDeliveryUrlProvided;
+use DeDmytro\CloudflareImages\Exceptions\NoKeyOrAccountProvided;
 use DeDmytro\CloudflareImages\Http\Entities\DirectUploadInfo;
 use DeDmytro\CloudflareImages\Http\Entities\Image;
 use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
-use DeDmytro\CloudflareImages\Http\Responses\DirectUploadResponse;
 use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use DeDmytro\CloudflareImages\Exceptions\NoKeyOrAccountProvided;
-use Psr\Http\Message\UploadedFileInterface;
-use Throwable;
 
 class ImagesApiClient
 {
@@ -45,12 +41,14 @@ class ImagesApiClient
      * Upload file and return details
      *
      * @param  string|\Illuminate\Http\UploadedFile  $file
+     * @param  string  $filename
      * @param  bool  $requiredSignedUrl
      * @param  array  $metadata
+     * @param  string|null  $customId
      *
      * @return DetailsResponse
      */
-     public function upload($file, string $filename = '', bool $requiredSignedUrl = false, array $metadata = [],$customId = null): DetailsResponse
+    public function upload($file, string $filename = '', bool $requiredSignedUrl = false, array $metadata = [], string $customId = null): DetailsResponse
     {
         if ($file instanceof UploadedFile) {
             $path = $file->getRealPath();
@@ -58,28 +56,25 @@ class ImagesApiClient
             $path = $file;
         }
 
-        $reqBody =  [
+        $body = [
             'file'              => [
-
                 'Content-type' => 'multipart/form-data',
                 'name'         => 'file',
                 'contents'     => fopen($path, 'rb'),
                 'filename'     => $filename ?: basename($path),
-
             ],
             'requireSignedURLs' => var_export($requiredSignedUrl, true),
             'metadata'          => \GuzzleHttp\json_encode($metadata),
         ];
-        if ($customId){
-            $reqBody['id'] = $customId;
+
+        if ($customId) {
+            $body['id'] = $customId;
         }
-        $result = $this->httpClient
-            ->asMultipart()
-            ->post('v1',$reqBody)->json();
+
+        $result = $this->httpClient->asMultipart()->post('v1', $body)->json();
 
         return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
     }
-
 
     /**
      * Return list of images

@@ -2,23 +2,13 @@
 
 namespace DeDmytro\CloudflareImages\Testing\Fakes;
 
-use DeDmytro\CloudflareImages\Exceptions\CloudflareImageNotFound;
-use DeDmytro\CloudflareImages\Exceptions\NoImageDeliveryUrlProvided;
+use DeDmytro\CloudflareImages\Exceptions\NoKeyOrAccountProvided;
 use DeDmytro\CloudflareImages\Http\Clients\ImagesApiClient;
 use DeDmytro\CloudflareImages\Http\Entities\DirectUploadInfo;
 use DeDmytro\CloudflareImages\Http\Entities\Image;
-use DeDmytro\CloudflareImages\Http\Entities\ImageVariants;
 use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
 use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
-use Illuminate\Http\Client\PendingRequest;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
-use DeDmytro\CloudflareImages\Exceptions\NoKeyOrAccountProvided;
 use Illuminate\Support\Str;
-use Psr\Http\Message\UploadedFileInterface;
-use Throwable;
 
 class ImagesApiClientFake extends ImagesApiClient
 {
@@ -51,7 +41,7 @@ class ImagesApiClientFake extends ImagesApiClient
      *
      * @return DetailsResponse
      */
-    public function upload($file, string $filename = '', bool $requiredSignedUrl = false, array $metadata = []): DetailsResponse
+    public function upload($file, string $filename = '', bool $requiredSignedUrl = false, array $metadata = [], string $customId = null): DetailsResponse
     {
         $result = [
             'result'   => $this->testImageData(Str::afterLast($file, '/')),
