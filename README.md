@@ -33,7 +33,7 @@ Or manually update `require` block of `composer.json` and run `composer update`.
 
 ## Configuration
 
-Add two environment variables to your .env file:
+Add environment variables to your .env file:
 
 ```dotenv
 CLOUDFLARE_IMAGES_ACCOUNT='your-account-id'
