@@ -152,7 +152,7 @@ $response->success
 
 ### Public url
 
-To generate image url locally call method `url(` and pass image ID. Don't forget to set up
+To generate image url locally call method `url($id)` and pass image ID. Don't forget to set up
 
 ```dotenv
 CLOUDFLARE_IMAGES_DELIVERY_URL=
