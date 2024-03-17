@@ -10,3 +10,5 @@ vendor/
 *.orig
 
 *.lock
+
+/.phpunit.cache
