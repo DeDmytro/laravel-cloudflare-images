@@ -10,7 +10,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-class VariantsApiTest extends TestCase
+final class VariantsApiTest extends TestCase
 {
     public function testSuccessfulListResponse(): void
     {

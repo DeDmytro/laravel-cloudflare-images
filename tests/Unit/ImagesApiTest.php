@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-class ImagesApiTest extends TestCase
+final class ImagesApiTest extends TestCase
 {
     public function testSuccessfulListResponse(): void
     {
