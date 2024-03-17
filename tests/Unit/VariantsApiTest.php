@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 class VariantsApiTest extends TestCase
 {
-    public function testSuccessfulListResponse()
+    public function testSuccessfulListResponse(): void
     {
         $result = CloudflareApi::variants()->list();
 
