@@ -12,16 +12,16 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-class ImagesApiTest extends TestCase
+final class ImagesApiTest extends TestCase
 {
-    public function testSuccessfulListResponse()
+    public function testSuccessfulListResponse(): void
     {
         $result = CloudflareApi::images()->list();
 
         $this->assertInstanceOf(ListResponse::class, $result);
     }
 
-    public function testSuccessfulUpload()
+    public function testSuccessfulUpload(): void
     {
         $this->uploadedImageAssertions(function (DetailsResponse $response) {
             $response = CloudflareApi::images()->get($response->result->id);
@@ -29,7 +29,7 @@ class ImagesApiTest extends TestCase
         });
     }
 
-    public function testDirectUploadResponse()
+    public function testDirectUploadResponse(): void
     {
         $response = CloudflareApi::images()->directUploadUrl();
 
@@ -38,7 +38,7 @@ class ImagesApiTest extends TestCase
         $this->assertNotNull($response->result->id);
     }
 
-    public function testImageExists()
+    public function testImageExists(): void
     {
         $response = CloudflareApi::images()->exists(Str::random());
 
