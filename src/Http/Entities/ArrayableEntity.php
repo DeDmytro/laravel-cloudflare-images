@@ -3,7 +3,6 @@
 namespace DeDmytro\CloudflareImages\Http\Entities;
 
 use Illuminate\Contracts\Support\Arrayable;
-use Ramsey\Collection\ArrayInterface;
 
 interface ArrayableEntity extends Arrayable
 {
@@ -12,7 +11,7 @@ interface ArrayableEntity extends Arrayable
      *
      * @param  array  $data
      *
-     * @return \DeDmytro\CloudflareImages\Http\Entities\ArrayableEntity
+     * @return ArrayableEntity
      */
     public static function fromArray(array $data);
 }

@@ -3,12 +3,15 @@
 namespace DeDmytro\CloudflareImages\Testing\Fakes;
 
 use DeDmytro\CloudflareImages\Exceptions\NoKeyOrAccountProvided;
+use DeDmytro\CloudflareImages\Helpers\SignedUrlGenerator;
 use DeDmytro\CloudflareImages\Http\Clients\ImagesApiClient;
 use DeDmytro\CloudflareImages\Http\Entities\DirectUploadInfo;
 use DeDmytro\CloudflareImages\Http\Entities\Image;
 use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
 use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
+use Throwable;
 
 class ImagesApiClientFake extends ImagesApiClient
 {
@@ -185,5 +188,20 @@ class ImagesApiClientFake extends ImagesApiClient
     public function url(string $imageId, ?string $variation = null): string
     {
         return Str::random(64);
+    }
+
+    /**
+     * Return signed image for private url by image id and variation
+     *
+     * @param  string  $imageId
+     * @param  string|null  $variation
+     * @param  int  $expirationSeconds  *
+     *
+     * @throws \Throwable
+     * @return string
+     */
+    public function signedUrl(string $imageId, ?string $variation = null, int $expirationSeconds = 3600): string
+    {
+        return SignedUrlGenerator::fromDeliveryUrl($this->url($imageId, $variation))->setExpiration($expirationSeconds)->generate();
     }
 }

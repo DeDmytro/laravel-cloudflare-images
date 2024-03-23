@@ -3,8 +3,10 @@
 namespace DeDmytro\CloudflareImages\Http\Clients;
 
 use DeDmytro\CloudflareImages\Exceptions\CloudflareImageNotFound;
+use DeDmytro\CloudflareImages\Exceptions\CloudflareSignedUrlNotSupportedForCustomIds;
 use DeDmytro\CloudflareImages\Exceptions\NoImageDeliveryUrlProvided;
 use DeDmytro\CloudflareImages\Exceptions\NoKeyOrAccountProvided;
+use DeDmytro\CloudflareImages\Helpers\SignedUrlGenerator;
 use DeDmytro\CloudflareImages\Http\Entities\DirectUploadInfo;
 use DeDmytro\CloudflareImages\Http\Entities\Image;
 use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
@@ -12,6 +14,7 @@ use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use Throwable;
 
 class ImagesApiClient
 {
@@ -40,12 +43,13 @@ class ImagesApiClient
     /**
      * Upload file and return details
      *
-     * @param  string|\Illuminate\Http\UploadedFile  $file
+     * @param  string|UploadedFile  $file
      * @param  string  $filename
      * @param  bool  $requiredSignedUrl
      * @param  array  $metadata
      * @param  string|null  $customId
      *
+     * @throws CloudflareSignedUrlNotSupportedForCustomIds
      * @return DetailsResponse
      */
     public function upload($file, string $filename = '', bool $requiredSignedUrl = false, array $metadata = [], string $customId = null): DetailsResponse
@@ -68,6 +72,9 @@ class ImagesApiClient
         ];
 
         if ($customId) {
+            if ($requiredSignedUrl) {
+                throw new CloudflareSignedUrlNotSupportedForCustomIds();
+            }
             $body['id'] = $customId;
         }
 
@@ -94,7 +101,7 @@ class ImagesApiClient
      *
      * @param  string  $imageId
      *
-     * @throws \DeDmytro\CloudflareImages\Exceptions\CloudflareImageNotFound
+     * @throws CloudflareImageNotFound
      * @throws \Throwable
      * @return DetailsResponse
      */
@@ -175,5 +182,20 @@ class ImagesApiClient
         }
 
         return ltrim(rtrim($imageDeliveryUrl, '/') . '/' . ltrim("$imageId/$variation", '/'), '/');
+    }
+
+    /**
+     * Return signed url by image id and variation
+     *
+     * @param  string  $imageId
+     * @param  string|null  $variation
+     * @param  int  $expirationSeconds
+     *
+     * @throws \Throwable
+     * @return string
+     */
+    public function signedUrl(string $imageId, ?string $variation = null, int $expirationSeconds = 3600): string
+    {
+        return SignedUrlGenerator::fromDeliveryUrl($this->url($imageId,$variation))->setExpiration($expirationSeconds)->generate();
     }
 }

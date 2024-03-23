@@ -2,9 +2,7 @@
 
 namespace DeDmytro\CloudflareImages\Exceptions;
 
-use Exception;
-
-class CloudflareImageNotFound extends Exception
+class CloudflareImageNotFound extends CloudflareImagesApiException
 {
     public function __construct(?string $imageId = null)
     {

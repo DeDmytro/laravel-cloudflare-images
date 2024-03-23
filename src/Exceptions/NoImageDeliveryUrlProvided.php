@@ -2,9 +2,7 @@
 
 namespace DeDmytro\CloudflareImages\Exceptions;
 
-use Exception;
-
-class NoImageDeliveryUrlProvided extends Exception
+class NoImageDeliveryUrlProvided extends CloudflareImagesApiException
 {
     public function __construct()
     {

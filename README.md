@@ -40,6 +40,7 @@ CLOUDFLARE_IMAGES_ACCOUNT='your-account-id'
 CLOUDFLARE_IMAGES_KEY='your-api-key'
 CLOUDFLARE_IMAGES_DELIVERY_URL='https://imagedelivery.net/ZWd9g1K8vvvVv_Yyyy_XXX'
 CLOUDFLARE_IMAGES_DEFAULT_VARIATION='your-default-variation'
+CLOUDFLARE_IMAGES_SIGNATURE_TOKEN='your-signature-token'
 ```
 
 or publish config and set up vars there
@@ -49,9 +50,21 @@ return [
     'account'=> env('CLOUDFLARE_IMAGES_ACCOUNT'),
     'key'=> env('CLOUDFLARE_IMAGES_KEY'),
     'delivery_url'      => env('CLOUDFLARE_IMAGES_DELIVERY_URL'),
-    'default_variation' => env('CLOUDFLARE_IMAGES_DEFAULT_VARIATION')
+    'default_variation' => env('CLOUDFLARE_IMAGES_DEFAULT_VARIATION'),
+    'signature_token'   => env('CLOUDFLARE_IMAGES_SIGNATURE_TOKEN')
 ];
 ```
+
+`CLOUDFLARE_IMAGES_KEY` - is an `API Token`. To create a new one go to [User Api Tokens](https://dash.cloudflare.com/profile/api-tokens) on Cloudflare dashboard
+
+`CLOUDFLARE_IMAGES_ACCOUNT` - is an `Account ID` on the Overview page
+
+`CLOUDFLARE_IMAGES_DELIVERY_URL` - is an `Image Delivery URL` on the Overview page
+
+`CLOUDFLARE_IMAGES_DEFAULT_VARIATION` - is a variation on the Variants page
+
+`CLOUDFLARE_IMAGES_SIGNATURE_TOKEN` - is a token from the Images -> Keys page
+
 
 ## Using
 
@@ -168,6 +181,28 @@ $url = CloudflareApi::images()->url($id)
 ```html
 <img src="{{ $url }}"/>
 ```
+
+### Signed url
+
+To generate signed image url locally call method `signedUrl($id, $expires = 3600)` and pass image ID and expiration time in seconds. Don't forget to set up
+
+```dotenv
+CLOUDFLARE_IMAGES_DELIVERY_URL=
+CLOUDFLARE_IMAGES_DEFAULT_VARIATION=
+CLOUDFLARE_IMAGES_SIGNATURE_TOKEN=
+```
+
+```php
+use DeDmytro\CloudflareImages\Facades\CloudflareApi;
+
+$url = CloudflareApi::images()->signedUrl($id, $expires)
+```
+
+```html
+
+<img src="{{ $url }}"/>
+```
+
 
 [badge_downloads]:      https://img.shields.io/packagist/dt/dedmytro/laravel-cloudflare-images.svg?style=flat-square
 

@@ -2,6 +2,7 @@
 
 namespace DeDmytro\CloudflareImages\Http\Responses;
 
+use DeDmytro\CloudflareImages\Exceptions\CloudflareImagesApiUnexpectedError;
 use DeDmytro\CloudflareImages\Exceptions\IncorrectKeyOrAccountProvided;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
@@ -21,6 +22,7 @@ abstract class BaseResponse implements Arrayable
 
     /**
      * Defines
+     *
      * @var array
      */
     public array $errors;
@@ -29,6 +31,10 @@ abstract class BaseResponse implements Arrayable
      * @var array
      */
     public array $messages;
+
+    public const RESPONSE_CODE_MISSING_AUTHORIZATION_KEYS = 9106;
+
+    public const RESPONSE_CODE_AUTHENTICATION_ERROR = 10000;
 
     /**
      * @param  array|object  $result
@@ -49,7 +55,8 @@ abstract class BaseResponse implements Arrayable
      *
      * @param  array  $array
      *
-     * @throws \DeDmytro\CloudflareImages\Exceptions\IncorrectKeyOrAccountProvided
+     * @throws IncorrectKeyOrAccountProvided
+     * @throws CloudflareImagesApiUnexpectedError
      * @return static
      */
     final public static function fromArray(array $array)
@@ -61,8 +68,15 @@ abstract class BaseResponse implements Arrayable
                 Arr::get($array, 'errors', []),
                 Arr::get($array, 'messages', []),
             );
-        }catch (TypeError $exception){
-            throw new IncorrectKeyOrAccountProvided();
+        }
+        catch (TypeError $exception) {
+            $responseCode = Arr::get($array, 'errors.0.code');
+
+            if (in_array($responseCode, [self::RESPONSE_CODE_AUTHENTICATION_ERROR, self::RESPONSE_CODE_MISSING_AUTHORIZATION_KEYS], true)) {
+                throw new IncorrectKeyOrAccountProvided();
+            }
+
+            throw new CloudflareImagesApiUnexpectedError(Arr::get($array, 'errors.0.message'));
         }
     }
 

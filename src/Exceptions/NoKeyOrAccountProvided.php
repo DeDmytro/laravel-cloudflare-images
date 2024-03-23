@@ -2,7 +2,7 @@
 
 namespace DeDmytro\CloudflareImages\Exceptions;
 
-class NoKeyOrAccountProvided extends \Exception
+class NoKeyOrAccountProvided extends CloudflareImagesApiException
 {
     public function __construct()
     {
