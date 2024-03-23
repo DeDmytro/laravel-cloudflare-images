@@ -26,7 +26,7 @@ Or manually update `require` block of `composer.json` and run `composer update`.
 ```json
 {
     "require": {
-        "dedmytro/laravel-cloudflare-images": "^0.1"
+        "dedmytro/laravel-cloudflare-images": "^0.2"
     }
 }
 ```
