@@ -3,12 +3,8 @@
 namespace DeDmytro\CloudflareImages\Http\Entities;
 
 use Carbon\Carbon;
-use Closure;
 use DateTimeInterface;
-use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 
 class Image implements ArrayableEntity
 {
@@ -56,7 +52,7 @@ class Image implements ArrayableEntity
         return new self(
             (string) Arr::get($array, 'id'),
             (string) Arr::get($array, 'filename'),
-            (array) Arr::get($array, 'metadata'),
+            (array) Arr::get($array, 'meta'),
             (bool) Arr::get($array, 'requireSignedURLs'),
             ImageVariants::fromArray((array) Arr::get($array, 'variants')),
             Arr::get($array, 'uploaded'),
