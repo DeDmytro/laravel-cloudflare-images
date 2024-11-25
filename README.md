@@ -112,6 +112,31 @@ $image->variants->original; //Depends on your Cloudflare Images Variants setting
 
 ```
 
+### Upload via URL
+Call `uploadViaUrl()` method and pass a URL. As a result of upload you'll get `DetailsResponse` instance with uploaded
+image details, so you can save it locally.
+
+```php
+use DeDmytro\CloudflareImages\Facades\CloudflareApi;
+use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
+use DeDmytro\CloudflareImages\Http\Entities\Image;
+
+/* @var $file \Illuminate\Http\UploadedFile|string */
+
+/* @var $response DetailsResponse*/
+$response = CloudflareApi::images()->uploadViaUrl($url)
+
+/* @var $image Image*/
+$image = $response->result
+
+$image->id;
+$image->filename;
+$image->variants->thumbnail; //Depends on your Cloudflare Images Variants setting
+$image->variants->original; //Depends on your Cloudflare Images Variants setting
+
+
+```
+
 ### List
 
 To list existing images you should use `list()` method which also has pagination and accept `$page` and `$perPage` arguments.

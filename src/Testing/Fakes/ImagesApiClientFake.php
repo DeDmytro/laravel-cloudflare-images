@@ -56,6 +56,19 @@ class ImagesApiClientFake extends ImagesApiClient
         return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
     }
 
+    public function uploadViaUrl(string $url, array $metadata = [], bool $requireSignedUrl = false): DetailsResponse
+    {
+        $result = [
+            'result' => $this->testImageData(basename($url)),
+            'success' => true,
+            'errors' => [],
+            'messages' => [],
+        ];
+
+        return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
+    }
+
+
     /**
      * Return test image data and save id to static
      *

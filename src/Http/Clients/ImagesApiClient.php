@@ -84,6 +84,29 @@ class ImagesApiClient
     }
 
     /**
+     * Upload an image via URL
+     *
+     * @param  string  $url  The URL of the image to upload
+     * @param  array  $metadata  Metadata to include with the upload
+     * @param  bool  $requireSignedUrl  Whether signed URLs are required
+     *
+     * @return DetailsResponse
+     * @throws \Throwable
+     */
+    public function uploadViaUrl(string $url, array $metadata = [], bool $requireSignedUrl = false): DetailsResponse
+    {
+        $body = [
+            'url' => $url,
+            'requireSignedURLs' => $requireSignedUrl,
+            'metadata' => $metadata,
+        ];
+
+        $result = $this->httpClient->post('v1', $body)->json();
+
+        return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
+    }
+
+    /**
      * Return list of images
      *
      * @param  int  $page

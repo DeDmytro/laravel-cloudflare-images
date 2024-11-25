@@ -50,6 +50,32 @@ final class ImagesApiTest extends TestCase
         });
     }
 
+    public function testUploadedImageViaURL(): void
+    {
+        $this->uploadedImageViaURLAssertions(function (DetailsResponse $response) {
+            $response = CloudflareApi::images()->get($response->result->id);
+            $this->assertInstanceOf(DetailsResponse::class, $response);
+        });
+    }
+
+    private function uploadedImageViaURLAssertions(Closure $closure): void
+    {
+        $imageUrl = 'https://placehold.co/400'; // Example image URL
+
+        // Upload the image via URL
+        $response = CloudflareApi::images()->uploadViaUrl($imageUrl);
+
+        // Assert the upload response is of the expected type
+        $this->assertInstanceOf(DetailsResponse::class, $response);
+
+        $closure($response);
+
+        // Cleanup: Delete the uploaded image
+        $deleteResponse = CloudflareApi::images()->delete($response->result->id);
+        $this->assertInstanceOf(DetailsResponse::class, $deleteResponse, 'The delete response should be valid');
+        $this->assertTrue($deleteResponse->success, 'The delete operation should succeed');
+    }
+
     /**
      * Upload image and delete it. Allow to assert smth for real image
      *
@@ -72,4 +98,5 @@ final class ImagesApiTest extends TestCase
         $response = CloudflareApi::images()->delete($response->result->id);
         $this->assertInstanceOf(DetailsResponse::class, $response);
     }
+
 }
