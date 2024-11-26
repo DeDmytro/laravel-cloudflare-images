@@ -126,9 +126,20 @@ class ImagesApiClient
             throw new CloudflareImageNotFound($imageId);
         }
 
-        $fileContents = $response->body(); // Raw binary data from the response
+        $tmpDir = sys_get_temp_dir(); // System temporary directory
+        $tmpFilePath = $tmpDir . DIRECTORY_SEPARATOR . "{$imageId}.tmp";
 
-        return $this->upload($fileContents, $imageId, $requireSignedUrl, $metadata, $customId);
+        file_put_contents($tmpFilePath, $response->body());
+
+        try {
+            $detailsResponse = $this->upload($tmpFilePath, $imageId, $requireSignedUrl, $metadata, $customId);
+        } finally {
+            if (file_exists($tmpFilePath)) {
+                unlink($tmpFilePath);
+            }
+        }
+
+        return $detailsResponse;
     }
 
     /**
