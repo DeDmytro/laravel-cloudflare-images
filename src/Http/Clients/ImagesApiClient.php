@@ -107,6 +107,31 @@ class ImagesApiClient
     }
 
     /**
+     * Clone an image by downloading it from Cloudflare and uploading it to Cloudflare again.
+     *
+     * @param  string  $imageId  The ID of the image to clone.
+     * @param  string|null  $customId  Optionally provide a custom ID for the new image.
+     * @param  array  $metadata  Optional metadata for the new image.
+     * @param  bool  $requireSignedUrl  Whether the image requires signed URLs.
+     *
+     * @throws \DeDmytro\CloudflareImages\Exceptions\CloudflareSignedUrlNotSupportedForCustomIds
+     * @throws \DeDmytro\CloudflareImages\Exceptions\CloudflareImageNotFound|\Illuminate\Http\Client\ConnectionException
+     * @return DetailsResponse The response with details of the cloned image.
+     */
+    public function clone(string $imageId, string $customId = null, array $metadata = [], bool $requireSignedUrl = false): DetailsResponse
+    {
+        $response = $this->httpClient->get("v1/{$imageId}/blob");
+
+        if ($response->failed()) {
+            throw new CloudflareImageNotFound($imageId);
+        }
+
+        $fileContents = $response->body(); // Raw binary data from the response
+
+        return $this->upload($fileContents, $imageId, $requireSignedUrl, $metadata, $customId);
+    }
+
+    /**
      * Return list of images
      *
      * @param  int  $page
