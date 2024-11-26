@@ -97,11 +97,11 @@ class ImagesApiClient
     {
         $body = [
             'url' => $url,
-            'requireSignedURLs' => $requireSignedUrl,
-            'metadata' => $metadata,
+            'requireSignedURLs' => var_export($requireSignedUrl, true),
+            'metadata' => \GuzzleHttp\json_encode($metadata),
         ];
 
-        $result = $this->httpClient->post('v1', $body)->json();
+        $result = $this->httpClient->asMultipart()->post('v1', $body)->json();
 
         return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
     }
