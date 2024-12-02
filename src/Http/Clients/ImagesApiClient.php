@@ -223,7 +223,7 @@ class ImagesApiClient
             'metadata' => json_encode($metadata),
         ];
 
-        $result = $this->httpClient->asMultipart()->post('v1/direct_upload', $body)->json();
+        $result = $this->httpClient->asMultipart()->post('v2/direct_upload', $body)->json();
 
         return DetailsResponse::fromArray($result)->mapResultInto(DirectUploadInfo::class);
     }

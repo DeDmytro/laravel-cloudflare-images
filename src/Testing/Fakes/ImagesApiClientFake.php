@@ -172,9 +172,12 @@ class ImagesApiClientFake extends ImagesApiClient
      * Direct upload allows uploading files from frontend without sharing the application api key
      *
      * @link https://developers.cloudflare.com/images/cloudflare-images/upload-images/direct-creator-upload
-     * @return DetailsResponse
+     *
+     * @param bool $requireSignedUrl* @param array $metadata
+*
+* @return DetailsResponse
      */
-    public function directUploadUrl(): DetailsResponse
+    public function directUploadUrl(array $metadata = [], bool $requireSignedUrl = false): DetailsResponse
     {
         $result = [
             'result'   => [
