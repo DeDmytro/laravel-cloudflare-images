@@ -220,7 +220,7 @@ class ImagesApiClient
     {
         $body = [
             'requireSignedURLs' => var_export($requireSignedUrl, true),
-            'metadata' => json_encode($metadata),
+            'metadata' => \GuzzleHttp\json_encode($metadata),
         ];
 
         $result = $this->httpClient->asMultipart()->post('v2/direct_upload', $body)->json();
