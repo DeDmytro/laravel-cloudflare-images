@@ -216,9 +216,16 @@ class ImagesApiClient
      * @link https://developers.cloudflare.com/images/cloudflare-images/upload-images/direct-creator-upload
      * @return DetailsResponse
      */
-    public function directUploadUrl(): DetailsResponse
+    public function directUploadUrl(array $metadata = [], bool $requireSignedUrl = false): DetailsResponse
     {
-        return DetailsResponse::fromArray($this->httpClient->post('v1/direct_upload')->json())->mapResultInto(DirectUploadInfo::class);
+        $body = [
+            'requireSignedURLs' => var_export($requireSignedUrl, true),
+            'metadata' => json_encode($metadata),
+        ];
+
+        $result = $this->httpClient->asMultipart()->post('v1/direct_upload', $body)->json();
+
+        return DetailsResponse::fromArray($result)->mapResultInto(DirectUploadInfo::class);
     }
 
     /**
