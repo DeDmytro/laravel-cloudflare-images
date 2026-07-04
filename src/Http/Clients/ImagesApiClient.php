@@ -11,6 +11,7 @@ use DeDmytro\CloudflareImages\Http\Entities\DirectUploadInfo;
 use DeDmytro\CloudflareImages\Http\Entities\Image;
 use DeDmytro\CloudflareImages\Http\Responses\DetailsResponse;
 use DeDmytro\CloudflareImages\Http\Responses\ListResponse;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
@@ -81,6 +82,64 @@ class ImagesApiClient
         $result = $this->httpClient->asMultipart()->post('v1', $body)->json();
 
         return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
+    }
+
+    /**
+     * Upload an image via URL
+     *
+     * @param  string  $url
+     * @param  array  $metadata
+     * @param  bool  $requireSignedUrl
+     *
+     * @throws \Throwable
+     * @return DetailsResponse
+     */
+    public function uploadViaUrl(string $url, array $metadata = [], bool $requireSignedUrl = false): DetailsResponse
+    {
+        $body = [
+            'url'               => $url,
+            'requireSignedURLs' => var_export($requireSignedUrl, true),
+            'metadata'          => \GuzzleHttp\json_encode($metadata),
+        ];
+
+        $result = $this->httpClient->asMultipart()->post('v1', $body)->json();
+
+        return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
+    }
+
+    /**
+     * Clone an image by downloading its blob and re-uploading it
+     *
+     * @param  string  $imageId
+     * @param  string|null  $customId
+     * @param  array  $metadata
+     * @param  bool  $requireSignedUrl
+     *
+     * @throws CloudflareImageNotFound|\Illuminate\Http\Client\ConnectionException
+     * @throws CloudflareSignedUrlNotSupportedForCustomIds
+     * @return DetailsResponse
+     */
+    public function clone(string $imageId, string $customId = null, array $metadata = [], bool $requireSignedUrl = false): DetailsResponse
+    {
+        $response = $this->httpClient->get("v1/{$imageId}/blob");
+
+        if ($response->failed()) {
+            throw new CloudflareImageNotFound($imageId);
+        }
+
+        $tmpFilePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "{$imageId}.tmp";
+
+        file_put_contents($tmpFilePath, $response->body());
+
+        try {
+            $detailsResponse = $this->upload($tmpFilePath, $imageId, $requireSignedUrl, $metadata, $customId);
+        } finally {
+            if (file_exists($tmpFilePath)) {
+                unlink($tmpFilePath);
+            }
+        }
+
+        return $detailsResponse;
     }
 
     /**
@@ -155,11 +214,22 @@ class ImagesApiClient
      * Direct upload allows uploading files from frontend without sharing the application api key
      *
      * @link https://developers.cloudflare.com/images/cloudflare-images/upload-images/direct-creator-upload
+     *
+     * @param  array  $metadata
+     * @param  bool  $requireSignedUrl
+     *
      * @return DetailsResponse
      */
-    public function directUploadUrl(): DetailsResponse
+    public function directUploadUrl(array $metadata = [], bool $requireSignedUrl = false): DetailsResponse
     {
-        return DetailsResponse::fromArray($this->httpClient->post('v1/direct_upload')->json())->mapResultInto(DirectUploadInfo::class);
+        $body = [
+            'requireSignedURLs' => var_export($requireSignedUrl, true),
+            'metadata'          => \GuzzleHttp\json_encode($metadata),
+        ];
+
+        $result = $this->httpClient->asMultipart()->post('v2/direct_upload', $body)->json();
+
+        return DetailsResponse::fromArray($result)->mapResultInto(DirectUploadInfo::class);
     }
 
     /**

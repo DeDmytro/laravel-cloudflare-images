@@ -2,6 +2,7 @@
 
 namespace DeDmytro\CloudflareImages\Testing\Fakes;
 
+use DeDmytro\CloudflareImages\Exceptions\CloudflareSignedUrlNotSupportedForCustomIds;
 use DeDmytro\CloudflareImages\Exceptions\NoKeyOrAccountProvided;
 use DeDmytro\CloudflareImages\Helpers\SignedUrlGenerator;
 use DeDmytro\CloudflareImages\Http\Clients\ImagesApiClient;
@@ -29,8 +30,8 @@ class ImagesApiClientFake extends ImagesApiClient
     {
         config()->set('cloudflare_images.account', 'fake');
         config()->set('cloudflare_images.key', 'fake');
-        config()->set('cloudflare_images.default_variation', 'fake');
-        config()->set('cloudflare_images.delivery_url', 'fake');
+        config()->set('cloudflare_images.default_variation', 'public');
+        config()->set('cloudflare_images.delivery_url', 'https://imagedelivery.example.net');
 
         parent::__construct();
     }
@@ -38,16 +39,31 @@ class ImagesApiClientFake extends ImagesApiClient
     /**
      * Upload file and return details
      *
-     * @param  string|\Illuminate\Http\UploadedFile  $file
+     * @param  string|UploadedFile  $file
+     * @param  string  $filename
      * @param  bool  $requiredSignedUrl
      * @param  array  $metadata
+     * @param  string|null  $customId
      *
+     * @throws CloudflareSignedUrlNotSupportedForCustomIds
      * @return DetailsResponse
      */
     public function upload($file, string $filename = '', bool $requiredSignedUrl = false, array $metadata = [], string $customId = null): DetailsResponse
     {
+        if ($customId && $requiredSignedUrl) {
+            throw new CloudflareSignedUrlNotSupportedForCustomIds();
+        }
+
+        $imageFilename = $filename ?: ($file instanceof UploadedFile ? $file->getClientOriginalName() : basename($file));
+        $data = $this->testImageData($imageFilename, $requiredSignedUrl, $metadata);
+
+        if ($customId) {
+            $data['id'] = $customId;
+            static::$createdFakeIds[array_key_last(static::$createdFakeIds)] = $customId;
+        }
+
         $result = [
-            'result'   => $this->testImageData(Str::afterLast($file, '/')),
+            'result'   => $data,
             'success'  => true,
             'errors'   => [],
             'messages' => [],
@@ -57,13 +73,72 @@ class ImagesApiClientFake extends ImagesApiClient
     }
 
     /**
-     * Return test image data and save id to static
+     * Upload an image via URL
+     *
+     * @param  string  $url
+     * @param  array  $metadata
+     * @param  bool  $requireSignedUrl
+     *
+     * @return DetailsResponse
+     */
+    public function uploadViaUrl(string $url, array $metadata = [], bool $requireSignedUrl = false): DetailsResponse
+    {
+        $data = $this->testImageData(basename($url), $requireSignedUrl, $metadata);
+
+        $result = [
+            'result'   => $data,
+            'success'  => true,
+            'errors'   => [],
+            'messages' => [],
+        ];
+
+        return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
+    }
+
+    /**
+     * Clone an image
+     *
+     * @param  string  $imageId
+     * @param  string|null  $customId
+     * @param  array  $metadata
+     * @param  bool  $requireSignedUrl
+     *
+     * @throws CloudflareSignedUrlNotSupportedForCustomIds
+     * @return DetailsResponse
+     */
+    public function clone(string $imageId, string $customId = null, array $metadata = [], bool $requireSignedUrl = false): DetailsResponse
+    {
+        if ($customId && $requireSignedUrl) {
+            throw new CloudflareSignedUrlNotSupportedForCustomIds();
+        }
+
+        $data = $this->testImageData($imageId, $requireSignedUrl, $metadata);
+
+        if ($customId) {
+            $data['id'] = $customId;
+            static::$createdFakeIds[array_key_last(static::$createdFakeIds)] = $customId;
+        }
+
+        $result = [
+            'result'   => $data,
+            'success'  => true,
+            'errors'   => [],
+            'messages' => [],
+        ];
+
+        return DetailsResponse::fromArray($result)->mapResultInto(Image::class);
+    }
+
+    /**
+     * Return test image data and save id to static array
      *
      * @param  string|null  $filename
+     * @param  bool  $requireSignedURLs
+     * @param  array  $metadata
      *
      * @return array
      */
-    private function testImageData(string $filename = null): array
+    private function testImageData(string $filename = null, bool $requireSignedURLs = false, array $metadata = []): array
     {
         $id = Str::random(64);
 
@@ -72,8 +147,8 @@ class ImagesApiClientFake extends ImagesApiClient
         return [
             'id'                => $id,
             'filename'          => $filename ?? Str::random(64),
-            'metadata'          => [],
-            'requireSignedURLs' => false,
+            'metadata'          => $metadata,
+            'requireSignedURLs' => $requireSignedURLs,
             'variants'          => [],
             'uploaded'          => now()->toDateTimeString(),
         ];
@@ -90,9 +165,11 @@ class ImagesApiClientFake extends ImagesApiClient
     public function list(int $page = 1, int $perPage = 50): ListResponse
     {
         $result = [
-            'result'   => array_map(function ($item) {
-                return $this->testImageData();
-            }, range(1, $perPage)),
+            'result'   => [
+                'images' => array_map(function ($item) {
+                    return $this->testImageData();
+                }, range(1, $perPage)),
+            ],
             'success'  => true,
             'errors'   => [],
             'messages' => [],
@@ -159,9 +236,13 @@ class ImagesApiClientFake extends ImagesApiClient
      * Direct upload allows uploading files from frontend without sharing the application api key
      *
      * @link https://developers.cloudflare.com/images/cloudflare-images/upload-images/direct-creator-upload
+     *
+     * @param  array  $metadata
+     * @param  bool  $requireSignedUrl
+     *
      * @return DetailsResponse
      */
-    public function directUploadUrl(): DetailsResponse
+    public function directUploadUrl(array $metadata = [], bool $requireSignedUrl = false): DetailsResponse
     {
         $result = [
             'result'   => [
@@ -187,7 +268,10 @@ class ImagesApiClientFake extends ImagesApiClient
      */
     public function url(string $imageId, ?string $variation = null): string
     {
-        return Str::random(64);
+        $variation = $variation ?? config('cloudflare_images.default_variation', 'public');
+        $deliveryUrl = config('cloudflare_images.delivery_url', 'https://imagedelivery.example.net');
+
+        return rtrim($deliveryUrl, '/') . '/' . $imageId . '/' . $variation;
     }
 
     /**
@@ -195,7 +279,7 @@ class ImagesApiClientFake extends ImagesApiClient
      *
      * @param  string  $imageId
      * @param  string|null  $variation
-     * @param  int  $expirationSeconds  *
+     * @param  int  $expirationSeconds
      *
      * @throws \Throwable
      * @return string
